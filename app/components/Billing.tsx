@@ -143,12 +143,7 @@ export default function Billing() {
             <span className="text-white font-semibold">Networks</span>
           </p>
 
-          <Image
-            src="/cybit.svg"
-            alt="CyBit Networks Logo"
-            width={50}
-            height={50}
-          />
+        
         </div>
       </footer>
     </div>

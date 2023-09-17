@@ -129,12 +129,7 @@ export default function RCM() {
             <span className="text-light-blue font-semibold">CyBit</span>{" "}
             <span className="text-white font-semibold">Networks</span>
           </p>
-          <Image
-            src="/cybit.svg"
-            alt="CyBit Networks Logo"
-            width={50}
-            height={50}
-          />
+          
         </div>
       </footer>
     </div>
