@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import AddStaff from "../../../clocking_app/clocking_system/src/components/formData";
 
 const EmployeeLoginModal = ({ isOpen, onClose }) => {
   const [username, setUsername] = useState("");
@@ -12,21 +13,7 @@ const EmployeeLoginModal = ({ isOpen, onClose }) => {
   return (
     <div className={`employee-login-modal ${isOpen ? "open" : ""}`}>
       <div className="modal-content">
-        <h2>Employee Login</h2>
-        <input
-          type="text"
-          placeholder="Username"
-          value={username}
-          onChange={(e) => setUsername(e.target.value)}
-        />
-        <input
-          type="password"
-          placeholder="Password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-        />
-        <button onClick={handleLogin}>Login</button>
-        <button onClick={onClose}>Close</button>
+        <AddStaff />
       </div>
     </div>
   );
