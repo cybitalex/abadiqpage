@@ -122,8 +122,6 @@ export default function About() {
             <span className="text-light-blue font-semibold">CyBit</span>{" "}
             <span className="text-white font-semibold">Networks</span>
           </p>
-
-        
         </div>
       </footer>
     </div>

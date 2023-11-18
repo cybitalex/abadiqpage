@@ -3,7 +3,7 @@ import Image from "next/image";
 import { useTypewriter, Cursor } from "react-simple-typewriter";
 import { BrowserRouter, Link } from "react-router-dom";
 import React, { useEffect, useState } from "react";
-import EmployeeLoginModal from "./employeeLogin";
+// import EmployeeLoginModal from "./employeeLogin";
 const MainPage: React.FC = (): React.ReactElement | null => {
   const [isModalOpen, setIsModalOpen] = useState(false);
 
@@ -24,10 +24,10 @@ const MainPage: React.FC = (): React.ReactElement | null => {
   if (typeof document !== "undefined") {
     return (
       <div className="flex flex-col min-h-screen">
-        <button onClick={openModal} className="employee-login-button">
+        {/* <button onClick={openModal} className="employee-login-button">
           Employee Login
-        </button>
-        <EmployeeLoginModal isOpen={isModalOpen} onClose={closeModal} />
+        </button> */}
+        {/* <EmployeeLoginModal isOpen={isModalOpen} onClose={closeModal} /> */}
 
         <main className="flex min-h-screen flex-col items-center justify-between p-24">
           <div className="z-10 max-w-5xl w-full items-center justify-between font-mono text-sm lg:flex">

@@ -28,14 +28,4 @@ func main() {
 	staff := Staff{Name: "Alex", Date: "2023-09-29", ClockedIn: true}
 	db.Create(&staff)
 
-	// // Read
-	// var productRead Product
-	// db.First(&productRead, 1)                 // Find the product with ID 1
-	// db.First(&productRead, "name = ?", "D42") // Find the product with name "D42"
-
-	// // Update - update product's Name and ClockedIn fields
-	// db.Model(&productRead).Updates(Product{Name: "F42", ClockedIn: false}) // Non-zero fields
-
-	// Delete - delete product
-	// db.Delete(&productRead, 1)
 }
