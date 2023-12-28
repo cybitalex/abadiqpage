@@ -1,3 +1,4 @@
+@import '~bootstrap/dist/css/bootstrap.min.css';
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -24,4 +25,17 @@ body {
       rgb(var(--background-end-rgb))
     )
     rgb(var(--background-start-rgb));
+}
+.btn-light-purple {
+  background-color: #d8b7ff;
+  border-color: #d8b7ff;
+  color: #fff;
+}
+.custom-modal .modal-content {
+  background-color: #333; /* Dark color for the modal background */
+  color: #fff; /* Text color */
+}
+
+.custom-modal .modal-backdrop {
+  background-color: rgba(0, 0, 0, 0.5); /* Adjust the alpha channel as needed */
 }
