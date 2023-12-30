@@ -7,11 +7,12 @@ import {
   useLocation,
 } from "react-router-dom";
 import "./styles.css";
-import Billing from "./components/Billing";
+import Billing from "./hosting/pages/Billing";
 import MainPage from "./components/Splashpage";
-import About from "./components/About";
-import Coding from "./components/Coding";
-import RCM from "./components/RCM";
+import About from "./hosting/pages/about";
+
+import Coding from "./hosting/pages/Coding";
+import RCM from "./hosting/pages/RCM";
 
 export default function App() {
   if (typeof document !== "undefined") {

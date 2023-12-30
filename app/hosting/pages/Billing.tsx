@@ -2,7 +2,7 @@
 import Image from "next/image";
 import { useTypewriter, Cursor } from "react-simple-typewriter";
 import { Link } from "react-router-dom";
-import MainPage from "./Splashpage";
+import MainPage from "../../components/Splashpage";
 
 export default function Billing() {
   const [text] = useTypewriter({
