@@ -9,6 +9,8 @@ const LoginModal = ({ show, onHide }) => {
   });
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+
   const handleLogin = async () => {
     try {
       setLoading(true);
@@ -17,32 +19,22 @@ const LoginModal = ({ show, onHide }) => {
       // Simple client-side validation
       if (!credentials.username || !credentials.password) {
         setError("Please enter both username and password.");
+        setLoading(false); // Ensure to stop loading if validation fails
         return;
       }
 
       console.log("Sending login request with username:", credentials.username);
 
       // Make sure to send data in the correct JSON format
-      const response = await axios.post(
-        "http://localhost:3001/login",
-        credentials
-      );
+      const response = await axios.post("http://localhost:3001/login", {
+        username: credentials.username,
+        password: credentials.password,
+      });
 
       if (response.data.success) {
-        const userId = response.data.userId;
-
-        // Now you can use the userId for further operations, such as clocking in
-        const clockInResponse = await axios.post(
-          "http://localhost:3001/clock-in",
-          {
-            user_id: userId,
-          }
-        );
-
-        console.log("Clock-in response:", clockInResponse.data);
-
-        // Close the modal after successful clock-in
-        onHide();
+        setIsLoggedIn(true); // Set isLoggedIn to true upon successful login
+        // Remove auto clock-in and modal close
+        console.log("Logged in successfully, user can now clock in or out.");
       } else {
         setError("Invalid credentials. Please try again.");
       }
@@ -59,6 +51,41 @@ const LoginModal = ({ show, onHide }) => {
       ...prevCredentials,
       [field]: value,
     }));
+  };
+  const handleClockIn = async () => {
+    try {
+      // Make a POST request to clock-in the user
+      const clockInResponse = await axios.post(
+        "http://localhost:3001/clock-in",
+        {
+          username: credentials.username, // sending the logged-in username
+        }
+      );
+      // Handle success - perhaps update state or notify user
+      console.log("Clocked In Successfully:", clockInResponse.data);
+      // You might want to update the UI or state here
+    } catch (error) {
+      console.error("Error clocking in:", error);
+      // Handle errors - show user a message or log
+    }
+  };
+
+  const handleClockOut = async () => {
+    try {
+      // Make a POST request to clock-out the user
+      const clockOutResponse = await axios.post(
+        "http://localhost:3001/clock-out",
+        {
+          username: credentials.username, // sending the logged-in username
+        }
+      );
+      // Handle success
+      console.log("Clocked Out Successfully:", clockOutResponse.data);
+      // You might want to update the UI or state here
+    } catch (error) {
+      console.error("Error clocking out:", error);
+      // Handle errors - show user a message or log
+    }
   };
 
   return (
@@ -98,6 +125,16 @@ const LoginModal = ({ show, onHide }) => {
           >
             {loading ? "Logging in..." : "Login"}
           </Button>
+          {isLoggedIn && (
+            <>
+              <Button variant="success" onClick={handleClockIn}>
+                Clock In
+              </Button>
+              <Button variant="danger" onClick={handleClockOut}>
+                Clock Out
+              </Button>
+            </>
+          )}
         </Form>
       </Modal.Body>
     </Modal>

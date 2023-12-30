@@ -45,7 +45,7 @@ app.use((req, res, next) => {
 
 app.post("/login", (req, res) => {
   const { username, password } = req.body;
-
+  console.log(req.body);
   const query = {
     text: "SELECT id FROM users WHERE username = $1 AND password = $2",
     values: [username, password],
