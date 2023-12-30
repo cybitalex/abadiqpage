@@ -1,11 +1,12 @@
 "use client";
 import { useState, useEffect } from "react";
-import {
-  BrowserRouter as Router,
-  Route,
-  Routes,
-  useLocation,
-} from "react-router-dom";
+// import {
+//   BrowserRouter as Router,
+//   Route,
+//   Routes,
+//   useLocation,
+// } from "react-router-dom";
+import { useRouter } from "next/router";
 import "./styles.css";
 import Billing from "./hosting/pages/Billing";
 import MainPage from "./components/Splashpage";
@@ -56,13 +57,13 @@ export default function App() {
             }
           }}
         >
-          <Routes location={displayLocation}>
-            <Route path="/" element={<MainPage />} />
-            <Route path="/billing" element={<Billing />} />
-            <Route path="/coding" element={<Coding />} />
-            <Route path="/rcm" element={<RCM />} />
-            <Route path="/about" element={<About />} />
-          </Routes>
+          <Router location={displayLocation}>
+            <Router path="/" element={<MainPage />} />
+            <Router path="/billing" element={<Billing />} />
+            <Router path="/coding" element={<Coding />} />
+            <Router path="/rcm" element={<RCM />} />
+            <Router path="/about" element={<About />} />
+          </Router>
         </div>
       );
     }
