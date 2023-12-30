@@ -10,6 +10,7 @@ const LoginModal = ({ show, onHide }) => {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [isClockedIn, setIsClockedIn] = useState(false);
 
   const handleLogin = async () => {
     try {
@@ -33,7 +34,9 @@ const LoginModal = ({ show, onHide }) => {
 
       if (response.data.success) {
         setIsLoggedIn(true); // Set isLoggedIn to true upon successful login
-        // Remove auto clock-in and modal close
+        setIsLoggedIn(true); // The user is now logged in
+        setIsClockedIn(response.data.isClockedIn);
+
         console.log("Logged in successfully, user can now clock in or out.");
       } else {
         setError("Invalid credentials. Please try again.");
@@ -54,16 +57,17 @@ const LoginModal = ({ show, onHide }) => {
   };
   const handleClockIn = async () => {
     try {
-      // Make a POST request to clock-in the user
       const clockInResponse = await axios.post(
         "http://localhost:3001/clock-in",
         {
-          username: credentials.username, // sending the logged-in username
+          username: credentials.username,
         }
       );
-      // Handle success - perhaps update state or notify user
       console.log("Clocked In Successfully:", clockInResponse.data);
-      // You might want to update the UI or state here
+      setIsClockedIn(true); // Set the user as clocked in
+      alert("Clocked In Successfully"); // Show success notification
+      onHide(); // Close the modal
+      window.location.reload();
     } catch (error) {
       console.error("Error clocking in:", error);
       // Handle errors - show user a message or log
@@ -79,9 +83,11 @@ const LoginModal = ({ show, onHide }) => {
           username: credentials.username, // sending the logged-in username
         }
       );
-      // Handle success
       console.log("Clocked Out Successfully:", clockOutResponse.data);
-      // You might want to update the UI or state here
+      setIsClockedIn(false);
+      alert("Clocked Out Successfully");
+      onHide();
+      window.location.reload();
     } catch (error) {
       console.error("Error clocking out:", error);
       // Handle errors - show user a message or log
@@ -127,10 +133,18 @@ const LoginModal = ({ show, onHide }) => {
           </Button>
           {isLoggedIn && (
             <>
-              <Button variant="success" onClick={handleClockIn}>
+              <Button
+                variant="success"
+                onClick={handleClockIn}
+                disabled={isClockedIn}
+              >
                 Clock In
               </Button>
-              <Button variant="danger" onClick={handleClockOut}>
+              <Button
+                variant="danger"
+                onClick={handleClockOut}
+                disabled={!isClockedIn}
+              >
                 Clock Out
               </Button>
             </>

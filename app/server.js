@@ -4,22 +4,27 @@ const { Client } = require("pg");
 const cors = require("cors");
 const app = express();
 const port = 3001;
+const next = require("next");
+const dev = process.env.NODE_ENV !== "production";
+const nextapp = next({ dev });
+const handle = nextapp.getRequestHandler();
+const path = require("path");
+nextapp.prepare().then(() => {
+  app.use(bodyParser.json());
+  app.use(cors());
 
-app.use(bodyParser.json());
-app.use(cors());
+  const client = new Client({
+    user: "postgres",
+    host: "64.225.56.183",
+    database: "clockingsystem",
+    password: "tar6*down",
+    port: 5432,
+  });
 
-const client = new Client({
-  user: "postgres",
-  host: "64.225.56.183",
-  database: "clockingsystem",
-  password: "tar6*down",
-  port: 5432,
-});
+  client.connect();
 
-client.connect();
-
-// Create a table if not exists
-const createTableQuery = `
+  // Create a table if not exists
+  const createTableQuery = `
   CREATE TABLE IF NOT EXISTS timesheet (
     id SERIAL PRIMARY KEY,
     user_id INT,
@@ -28,82 +33,127 @@ const createTableQuery = `
     clock_out TIMESTAMP
   );
 `;
-
-client.query(createTableQuery, (err, res) => {
-  if (err) {
-    console.error("Error creating table", err);
-  } else {
-    console.log("Table created successfully");
-  }
-});
-
-// Middleware to make the 'client' variable accessible globally
-app.use((req, res, next) => {
-  req.client = client;
-  next();
-});
-
-app.post("/login", (req, res) => {
-  const { username, password } = req.body;
-  console.log(req.body);
-  const query = {
-    text: "SELECT id FROM users WHERE username = $1 AND password = $2",
-    values: [username, password],
-  };
-
-  req.client.query(query, (err, result) => {
+  // Middleware to make the 'client' variable accessible globally
+  app.use((req, res, next) => {
+    req.client = client;
+    next();
+  });
+  client.query(createTableQuery, (err, res) => {
     if (err) {
-      console.error("Error during login query", err);
-      res
-        .status(500)
-        .json({ success: false, message: "Internal Server Error" });
+      console.error("Error creating table", err);
     } else {
-      if (result.rows.length === 1) {
-        const userId = result.rows[0].id;
-        res.json({ success: true, userId });
+      console.log("Table created successfully");
+    }
+  });
+
+  // Middleware to make the 'client' variable accessible globally
+  app.use((req, res, next) => {
+    req.client = client;
+    next();
+  });
+
+  app.post("/login", async (req, res) => {
+    const { username, password } = req.body;
+    const loginQuery = {
+      text: "SELECT id FROM users WHERE username = $1 AND password = $2",
+      values: [username, password],
+    };
+
+    try {
+      const loginResult = await req.client.query(loginQuery);
+      if (loginResult.rows.length === 1) {
+        const userId = loginResult.rows[0].id;
+
+        const statusQuery = {
+          text: "SELECT * FROM timesheet WHERE username = $1 ORDER BY clock_in DESC LIMIT 1",
+          values: [username],
+        };
+        const statusResult = await req.client.query(statusQuery);
+        const lastEntry = statusResult.rows[0];
+
+        const isClockedIn = lastEntry && !lastEntry.clock_out;
+
+        res.json({ success: true, userId, isClockedIn });
       } else {
         res.json({ success: false, message: "Invalid credentials" });
       }
+    } catch (error) {
+      console.error("Error during login query", error);
+      res
+        .status(500)
+        .json({ success: false, message: "Internal Server Error" });
     }
   });
-});
 
-app.post("/clock-in", async (req, res) => {
-  const { username } = req.body;
-  const clock_in = new Date();
+  app.post("/clock-in", async (req, res) => {
+    const { username } = req.body;
+    // Check if the user is already clocked in
+    const checkQuery = {
+      text: "SELECT * FROM timesheet WHERE username = $1 ORDER BY clock_in DESC LIMIT 1",
+      values: [username],
+    };
 
-  const query = {
-    text: "INSERT INTO timesheet(username, clock_in) VALUES($1, $2) RETURNING *",
-    values: [username, clock_in],
-  };
+    try {
+      const checkResult = await req.client.query(checkQuery);
+      const lastEntry = checkResult.rows[0];
 
-  try {
-    const result = await req.client.query(query);
-    res.json(result.rows[0]);
-  } catch (error) {
-    console.error("Error executing query", error);
-    res.status(500).send("Internal Server Error");
-  }
-});
+      // If the user's last clock-in has no clock-out, they're already clocked in
+      if (lastEntry && !lastEntry.clock_out) {
+        res.status(400).json({ message: "User already clocked in" });
+      } else {
+        // Proceed with clocking in
+        const clock_in = new Date();
+        const query = {
+          text: "INSERT INTO timesheet(username, clock_in) VALUES($1, $2) RETURNING *",
+          values: [username, clock_in],
+        };
+        const result = await req.client.query(query);
+        res.json(result.rows[0]);
+      }
+    } catch (error) {
+      console.error("Error executing clock-in query", error);
+      res.status(500).send("Internal Server Error");
+    }
+  });
 
-app.post("/clock-out", async (req, res) => {
-  const { username } = req.body;
-  const clock_out = new Date();
+  app.post("/clock-out", async (req, res) => {
+    const { username } = req.body;
 
-  const query = {
-    text: "UPDATE timesheet SET clock_out = $1 WHERE username = $2 AND clock_out IS NULL RETURNING *",
-    values: [clock_out, username],
-  };
+    // Check the user's last clock-in to ensure they can clock out
+    const checkQuery = {
+      text: "SELECT * FROM timesheet WHERE username = $1 ORDER BY clock_in DESC LIMIT 1",
+      values: [username],
+    };
 
-  try {
-    const result = await req.client.query(query);
-    res.json(result.rows[0]);
-  } catch (error) {
-    console.error("Error executing query", error);
-    res.status(500).send("Internal Server Error");
-  }
-});
+    try {
+      const checkResult = await req.client.query(checkQuery);
+      const lastEntry = checkResult.rows[0];
 
-app.listen(port, () => {
-  console.log(`Server is running on port ${port}`);
+      // Ensure there is a clock-in to clock out from
+      if (lastEntry && !lastEntry.clock_out) {
+        // Proceed with clocking out
+        const clock_out = new Date();
+        const query = {
+          text: "UPDATE timesheet SET clock_out = $1 WHERE id = $2 RETURNING *",
+          values: [clock_out, lastEntry.id], // Update the latest clock-in entry
+        };
+        const result = await req.client.query(query);
+        res.json(result.rows[0]);
+      } else {
+        res
+          .status(400)
+          .json({ message: "User not clocked in or already clocked out" });
+      }
+    } catch (error) {
+      console.error("Error executing clock-out query", error);
+      res.status(500).send("Internal Server Error");
+    }
+  });
+  // Next.js handling for all other routes
+  app.get("*", (req, res) => {
+    return handle(req, res);
+  });
+  app.listen(port, () => {
+    console.log(`Server is running on port ${port}`);
+  });
 });
