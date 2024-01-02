@@ -149,8 +149,10 @@ nextapp.prepare().then(() => {
       res.status(500).send("Internal Server Error");
     }
   });
-  // Next.js handling for all other routes
-  app.get("*", (req, res) => {
+  app.use(express.static("public")); // Serve static files (e.g., CSS, images)
+
+  // Custom catch-all route for Next.js pages
+  app.all("*", (req, res) => {
     return handle(req, res);
   });
   app.listen(port, () => {
