@@ -1,7 +1,7 @@
 // pages/_app.js
 import { useEffect } from "react";
 import { useRouter } from "next/router";
-import "../app/styles.css"; // Adjust the path to match your project structure
+import "../styles.css"; // Adjust the path to match your project structure
 
 function MyApp({ Component, pageProps }) {
   const router = useRouter();
