@@ -48,7 +48,7 @@ nextapp.prepare().then(() => {
     }
   });
 
-  app.post("/64.225.56.183/login", async (req, res) => {
+  app.post("/login", async (req, res) => {
     const { username, password } = req.body;
     const loginQuery = {
       text: 'SELECT id, "isAdmin" FROM users WHERE username = $1 AND password = $2',
@@ -115,7 +115,7 @@ nextapp.prepare().then(() => {
   }
 
   // Admin route to fetch admin data
-  app.get("/64.225.56.183/admin", isAdmin, async (req, res) => {
+  app.get("/admin", isAdmin, async (req, res) => {
     const { username } = req.body;
 
     // Fetch admin data as needed
@@ -138,7 +138,7 @@ nextapp.prepare().then(() => {
     }
   });
 
-  app.post("/64.225.56.183/clock-in", async (req, res) => {
+  app.post("/clock-in", async (req, res) => {
     const { username } = req.body;
     // Check if the user is already clocked in
     const checkQuery = {
@@ -169,7 +169,7 @@ nextapp.prepare().then(() => {
     }
   });
 
-  app.post("/64.225.56.183/clock-out", async (req, res) => {
+  app.post("/clock-out", async (req, res) => {
     const { username } = req.body;
 
     // Check the user's last clock-in to ensure they can clock out
@@ -204,7 +204,7 @@ nextapp.prepare().then(() => {
   });
   app.use(express.static("public")); // Serve static files (e.g., CSS, images)
   // Add this route before app.listen() at the end of your code
-  app.get("/64.225.56.183/api/admin/users", async (req, res) => {
+  app.get("/api/admin/users", async (req, res) => {
     try {
       // Fetch the list of users along with their clock-in and clock-out info from your database
       const getUsersQuery = {
