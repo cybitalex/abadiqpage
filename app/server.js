@@ -33,11 +33,13 @@ nextapp.prepare().then(() => {
     clock_out TIMESTAMP
   );
 `;
+
   // Middleware to make the 'client' variable accessible globally
   app.use((req, res, next) => {
     req.client = client;
     next();
   });
+
   client.query(createTableQuery, (err, res) => {
     if (err) {
       console.error("Error creating table", err);
@@ -46,23 +48,20 @@ nextapp.prepare().then(() => {
     }
   });
 
-  // Middleware to make the 'client' variable accessible globally
-  app.use((req, res, next) => {
-    req.client = client;
-    next();
-  });
-
   app.post("/login", async (req, res) => {
     const { username, password } = req.body;
     const loginQuery = {
-      text: "SELECT id FROM users WHERE username = $1 AND password = $2",
+      text: 'SELECT id, "isAdmin" FROM users WHERE username = $1 AND password = $2',
       values: [username, password],
     };
 
     try {
       const loginResult = await req.client.query(loginQuery);
+
       if (loginResult.rows.length === 1) {
-        const userId = loginResult.rows[0].id;
+        const user = loginResult.rows[0];
+        const userId = user.id;
+        const isAdmin = user.isAdmin;
 
         const statusQuery = {
           text: "SELECT * FROM timesheet WHERE username = $1 ORDER BY clock_in DESC LIMIT 1",
@@ -73,12 +72,66 @@ nextapp.prepare().then(() => {
 
         const isClockedIn = lastEntry && !lastEntry.clock_out;
 
-        res.json({ success: true, userId, isClockedIn });
+        res.json({ success: true, userId, isClockedIn, isAdmin }); // Include isAdmin in the response
       } else {
         res.json({ success: false, message: "Invalid credentials" });
       }
     } catch (error) {
       console.error("Error during login query", error);
+      res
+        .status(500)
+        .json({ success: false, message: "Internal Server Error" });
+    }
+  });
+
+  // Middleware to check if the user is an admin
+  function isAdmin(req, res, next) {
+    const { username } = req.body;
+
+    // Check if the user with the given username is an admin
+    const isAdminQuery = {
+      text: "SELECT isAdmin FROM users WHERE username = $1",
+      values: [username],
+    };
+
+    req.client.query(isAdminQuery, (err, result) => {
+      if (err) {
+        console.error("Error checking admin status", err);
+        res
+          .status(500)
+          .json({ success: false, message: "Internal Server Error" });
+      } else {
+        const isAdmin = result.rows[0]?.isadmin || false;
+
+        if (isAdmin) {
+          // User is an admin, proceed to the admin portal
+          next();
+        } else {
+          // User is not an admin, return an unauthorized response
+          res.status(403).json({ success: false, message: "Unauthorized" });
+        }
+      }
+    });
+  }
+
+  // Admin route to fetch admin data
+  app.get("/admin", isAdmin, async (req, res) => {
+    const { username } = req.body;
+
+    // Fetch admin data as needed
+    // Modify the SQL query to fetch relevant information from the timesheet table
+
+    const adminDataQuery = {
+      text: "SELECT * FROM timesheet", // Modify this query as needed
+    };
+
+    try {
+      const adminDataResult = await req.client.query(adminDataQuery);
+      const adminData = adminDataResult.rows;
+
+      res.json({ success: true, isAdmin: true, adminData });
+    } catch (error) {
+      console.error("Error during admin data query", error);
       res
         .status(500)
         .json({ success: false, message: "Internal Server Error" });
@@ -150,6 +203,29 @@ nextapp.prepare().then(() => {
     }
   });
   app.use(express.static("public")); // Serve static files (e.g., CSS, images)
+  // Add this route before app.listen() at the end of your code
+  app.get("/api/admin/users", async (req, res) => {
+    try {
+      // Fetch the list of users along with their clock-in and clock-out info from your database
+      const getUsersQuery = {
+        text: `
+          SELECT u.id, u.username, t.clock_in, t.clock_out
+          FROM users u
+          LEFT JOIN timesheet t ON u.username = t.username
+        `,
+      };
+
+      const getUsersResult = await req.client.query(getUsersQuery);
+      const users = getUsersResult.rows;
+
+      res.json(users);
+    } catch (error) {
+      console.error("Error fetching users for admin portal", error);
+      res
+        .status(500)
+        .json({ success: false, message: "Internal Server Error" });
+    }
+  });
 
   // Custom catch-all route for Next.js pages
   app.all("*", (req, res) => {
