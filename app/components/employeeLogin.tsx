@@ -27,7 +27,7 @@ const LoginModal = ({ show, onHide }) => {
       console.log("Sending login request with username:", credentials.username);
 
       // Make sure to send data in the correct JSON format
-      const response = await axios.post("http://localhost:3001/login", {
+      const response = await axios.post("http://64.225.56.183/login", {
         username: credentials.username,
         password: credentials.password,
       });
@@ -58,7 +58,7 @@ const LoginModal = ({ show, onHide }) => {
   const handleClockIn = async () => {
     try {
       const clockInResponse = await axios.post(
-        "http://localhost:3001/clock-in",
+        "http://64.225.56.183/clock-in",
         {
           username: credentials.username,
         }
@@ -78,7 +78,7 @@ const LoginModal = ({ show, onHide }) => {
     try {
       // Make a POST request to clock-out the user
       const clockOutResponse = await axios.post(
-        "http://localhost:3001/clock-out",
+        "http://64.225.56.183/clock-out",
         {
           username: credentials.username, // sending the logged-in username
         }
