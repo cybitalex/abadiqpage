@@ -33,7 +33,19 @@ nextapp.prepare().then(() => {
     clock_out TIMESTAMP
   );
 `;
+  const allowedOrigins = ["http://abadiq.com", "https://abadiq.com"];
 
+  app.use(
+    cors({
+      origin: function (origin, callback) {
+        if (!origin || allowedOrigins.includes(origin)) {
+          callback(null, true);
+        } else {
+          callback(new Error("Not allowed by CORS"));
+        }
+      },
+    })
+  );
   // Middleware to make the 'client' variable accessible globally
   app.use((req, res, next) => {
     req.client = client;
