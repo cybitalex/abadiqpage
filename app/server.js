@@ -227,14 +227,9 @@ nextapp.prepare().then(() => {
   app.get("/api/admin/users", async (req, res) => {
     try {
       // Fetch the list of users along with their clock-in and clock-out info from your database
-      // Use the 'AT TIME ZONE' function to convert timestamps to EST timezone
       const getUsersQuery = {
         text: `
-          SELECT
-            u.id,
-            u.username,
-            t.clock_in AT TIME ZONE 'UTC' AT TIME ZONE 'America/New_York' AS clock_in,
-            t.clock_out AT TIME ZONE 'UTC' AT TIME ZONE 'America/New_York' AS clock_out
+          SELECT u.id, u.username, t.clock_in, t.clock_out
           FROM users u
           LEFT JOIN timesheet t ON u.username = t.username
         `,
@@ -243,7 +238,24 @@ nextapp.prepare().then(() => {
       const getUsersResult = await req.client.query(getUsersQuery);
       const users = getUsersResult.rows;
 
-      res.json(users);
+      // Convert timestamps to EST
+      const usersInEST = users.map((user) => {
+        return {
+          id: user.id,
+          username: user.username,
+          clock_in: new Date(user.clock_in).toLocaleString("en-US", {
+            timeZone: "America/New_York",
+          }),
+          clock_out:
+            user.clock_out === null
+              ? null
+              : new Date(user.clock_out).toLocaleString("en-US", {
+                  timeZone: "America/New_York",
+                }),
+        };
+      });
+
+      res.json(usersInEST);
     } catch (error) {
       console.error("Error fetching users for admin portal", error);
       res
