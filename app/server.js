@@ -167,10 +167,14 @@ nextapp.prepare().then(() => {
         res.status(400).json({ message: "User already clocked in" });
       } else {
         // Proceed with clocking in
-        const clock_in = new Date();
+        // Convert the current time to EST before inserting it
+        const currentTimestamp = new Date().toLocaleString("en-US", {
+          timeZone: "America/New_York", // Set the timezone to EST
+        });
+
         const query = {
           text: "INSERT INTO timesheet(username, clock_in) VALUES($1, $2) RETURNING *",
-          values: [username, clock_in],
+          values: [username, currentTimestamp], // Use the converted timestamp
         };
         const result = await req.client.query(query);
         res.json(result.rows[0]);
@@ -180,7 +184,6 @@ nextapp.prepare().then(() => {
       res.status(500).send("Internal Server Error");
     }
   });
-
   app.post("/clock-out", async (req, res) => {
     const { username } = req.body;
 
@@ -197,10 +200,14 @@ nextapp.prepare().then(() => {
       // Ensure there is a clock-in to clock out from
       if (lastEntry && !lastEntry.clock_out) {
         // Proceed with clocking out
-        const clock_out = new Date();
+        // Convert the current time to EST before inserting it as the clock-out time
+        const currentTimestamp = new Date().toLocaleString("en-US", {
+          timeZone: "America/New_York", // Set the timezone to EST
+        });
+
         const query = {
           text: "UPDATE timesheet SET clock_out = $1 WHERE id = $2 RETURNING *",
-          values: [clock_out, lastEntry.id], // Update the latest clock-in entry
+          values: [currentTimestamp, lastEntry.id], // Use the converted timestamp
         };
         const result = await req.client.query(query);
         res.json(result.rows[0]);
@@ -214,6 +221,7 @@ nextapp.prepare().then(() => {
       res.status(500).send("Internal Server Error");
     }
   });
+
   app.use(express.static("public")); // Serve static files (e.g., CSS, images)
   // Add this route before app.listen() at the end of your code
   app.get("/api/admin/users", async (req, res) => {
