@@ -254,6 +254,30 @@ nextapp.prepare().then(() => {
                 }),
         };
       });
+      app.get("/api/admin/hours-worked", isAdmin, async (req, res) => {
+        try {
+          // SQL query to calculate hours and minutes worked for each row
+          const hoursWorkedQuery = `
+            SELECT
+              id,
+              username,
+              clock_in,
+              clock_out,
+              EXTRACT(EPOCH FROM (clock_out - clock_in)) / 3600.0 AS hours_worked
+            FROM timesheet;
+          `;
+
+          const hoursWorkedResult = await req.client.query(hoursWorkedQuery);
+          const hoursWorkedData = hoursWorkedResult.rows;
+
+          res.json({ success: true, hoursWorkedData });
+        } catch (error) {
+          console.error("Error calculating hours worked", error);
+          res
+            .status(500)
+            .json({ success: false, message: "Internal Server Error" });
+        }
+      });
 
       res.json(usersInEST);
     } catch (error) {
