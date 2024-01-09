@@ -7,6 +7,7 @@ const port = 3001;
 const next = require("next");
 const dev = process.env.NODE_ENV !== "production";
 const nextapp = next({ dev });
+const bcrypt = require("bcrypt");
 const handle = nextapp.getRequestHandler();
 const path = require("path");
 nextapp.prepare().then(() => {
@@ -63,8 +64,8 @@ nextapp.prepare().then(() => {
   app.post("/login", async (req, res) => {
     const { username, password } = req.body;
     const loginQuery = {
-      text: 'SELECT id, "isAdmin" FROM users WHERE username = $1 AND password = $2',
-      values: [username, password],
+      text: 'SELECT id, "isAdmin", password FROM users WHERE username = $1',
+      values: [username],
     };
 
     try {
@@ -74,17 +75,25 @@ nextapp.prepare().then(() => {
         const user = loginResult.rows[0];
         const userId = user.id;
         const isAdmin = user.isAdmin;
+        const hashedPassword = user.password; // Get the hashed password from the database
 
-        const statusQuery = {
-          text: "SELECT * FROM timesheet WHERE username = $1 ORDER BY clock_in DESC LIMIT 1",
-          values: [username],
-        };
-        const statusResult = await req.client.query(statusQuery);
-        const lastEntry = statusResult.rows[0];
+        // Compare the provided password with the hashed password
+        const passwordMatch = await bcrypt.compare(password, hashedPassword);
 
-        const isClockedIn = lastEntry && !lastEntry.clock_out;
+        if (passwordMatch) {
+          const statusQuery = {
+            text: "SELECT * FROM timesheet WHERE username = $1 ORDER BY clock_in DESC LIMIT 1",
+            values: [username],
+          };
+          const statusResult = await req.client.query(statusQuery);
+          const lastEntry = statusResult.rows[0];
 
-        res.json({ success: true, userId, isClockedIn, isAdmin }); // Include isAdmin in the response
+          const isClockedIn = lastEntry && !lastEntry.clock_out;
+
+          res.json({ success: true, userId, isClockedIn, isAdmin });
+        } else {
+          res.json({ success: false, message: "Invalid credentials" });
+        }
       } else {
         res.json({ success: false, message: "Invalid credentials" });
       }
