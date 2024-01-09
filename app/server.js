@@ -15,7 +15,7 @@ nextapp.prepare().then(() => {
 
   const client = new Client({
     user: "postgres",
-    host: "64.225.56.183",
+    host: "abadiqback.duckdns.org",
     database: "clockingsystem",
     password: "tar6*down",
     port: 5432,
@@ -219,9 +219,14 @@ nextapp.prepare().then(() => {
   app.get("/api/admin/users", async (req, res) => {
     try {
       // Fetch the list of users along with their clock-in and clock-out info from your database
+      // Use the 'AT TIME ZONE' function to convert timestamps to EST timezone
       const getUsersQuery = {
         text: `
-          SELECT u.id, u.username, t.clock_in, t.clock_out
+          SELECT
+            u.id,
+            u.username,
+            t.clock_in AT TIME ZONE 'UTC' AT TIME ZONE 'America/New_York' AS clock_in,
+            t.clock_out AT TIME ZONE 'UTC' AT TIME ZONE 'America/New_York' AS clock_out
           FROM users u
           LEFT JOIN timesheet t ON u.username = t.username
         `,
