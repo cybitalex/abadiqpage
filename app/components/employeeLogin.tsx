@@ -11,7 +11,12 @@ const LoginModal = ({ show, onHide }) => {
   const [loading, setLoading] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [isClockedIn, setIsClockedIn] = useState(false);
-
+  const [isAdmin, setIsAdmin] = useState(false);
+  const handleAdminButtonClick = () => {
+    // Add logic to handle the admin button click here
+    // For example, you can navigate to the admin portal page
+    // or perform any other actions specific to admin users.
+  };
   const handleLogin = async () => {
     try {
       setLoading(true);
@@ -27,15 +32,23 @@ const LoginModal = ({ show, onHide }) => {
       console.log("Sending login request with username:", credentials.username);
 
       // Make sure to send data in the correct JSON format
-      const response = await axios.post("https://64.225.56.183/login", {
-        username: credentials.username,
-        password: credentials.password,
-      });
+      const response = await axios.post(
+        "https://abadiqback.duckdns.org/login",
+        {
+          username: credentials.username,
+          password: credentials.password,
+        }
+      );
 
       if (response.data.success) {
         setIsLoggedIn(true); // Set isLoggedIn to true upon successful login
-        setIsLoggedIn(true); // The user is now logged in
         setIsClockedIn(response.data.isClockedIn);
+
+        // Fetch the admin status after successful login
+        const adminResponse = await axios.get(
+          "https://abadiqback.duckdns.org/admin"
+        );
+        setIsAdmin(adminResponse.data.isAdmin);
 
         console.log("Logged in successfully, user can now clock in or out.");
       } else {
@@ -58,7 +71,7 @@ const LoginModal = ({ show, onHide }) => {
   const handleClockIn = async () => {
     try {
       const clockInResponse = await axios.post(
-        "https://64.225.56.183/clock-in",
+        "https://abadiqback.duckdns.org/clock-in",
         {
           username: credentials.username,
         }
@@ -78,7 +91,7 @@ const LoginModal = ({ show, onHide }) => {
     try {
       // Make a POST request to clock-out the user
       const clockOutResponse = await axios.post(
-        "https://64.225.56.183/clock-out",
+        "https://abadiqback.duckdns.org/clock-out",
         {
           username: credentials.username, // sending the logged-in username
         }
@@ -148,6 +161,11 @@ const LoginModal = ({ show, onHide }) => {
                 Clock Out
               </Button>
             </>
+          )}
+          {isAdmin && (
+            <Button variant="info" onClick={handleAdminButtonClick}>
+              Admin Button
+            </Button>
           )}
         </Form>
       </Modal.Body>

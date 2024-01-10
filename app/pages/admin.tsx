@@ -1,43 +1,20 @@
-import React, { useState, useEffect } from "react";
+import React from "react";
+import { useRouter } from "next/router";
 
-const AdminPortal = () => {
-  const [users, setUsers] = useState<any[]>([]); // Use 'any[]' as the type
+const AdminPage: React.FC = () => {
+  const router = useRouter();
 
-  useEffect(() => {
-    // Fetch the list of users who have clocked in and out from your API or database
-    fetch("/api/admin/users")
-      .then((response) => response.json())
-      .then((data) => {
-        setUsers(data);
-      })
-      .catch((error) => {
-        console.error("Error fetching users", error);
-      });
-  }, []);
+  const handleAdminButtonClick = () => {
+    // Use Next.js Router to navigate to the admin portal
+    router.push("/admin");
+  };
 
   return (
     <div>
-      <h1>Welcome to the Admin Portal</h1>
-      <table>
-        <thead>
-          <tr>
-            <th>Username</th>
-            <th>Clock In</th>
-            <th>Clock Out</th>
-          </tr>
-        </thead>
-        <tbody>
-          {users.map((user) => (
-            <tr key={user.id}>
-              <td>{user.username}</td>
-              <td>{user.clock_in || "N/A"}</td>
-              <td>{user.clock_out || "N/A"}</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+      <h1>Admin Portal</h1>
+      <button onClick={handleAdminButtonClick}>Go to Admin Portal</button>
     </div>
   );
 };
 
-export default AdminPortal;
+export default AdminPage;

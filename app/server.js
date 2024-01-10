@@ -81,6 +81,7 @@ nextapp.prepare().then(() => {
         const passwordMatch = await bcrypt.compare(password, hashedPassword);
 
         if (passwordMatch) {
+          // Passwords match, indicating successful login
           const statusQuery = {
             text: "SELECT * FROM timesheet WHERE username = $1 ORDER BY clock_in DESC LIMIT 1",
             values: [username],
@@ -90,12 +91,11 @@ nextapp.prepare().then(() => {
 
           const isClockedIn = lastEntry && !lastEntry.clock_out;
 
-          res.json({ success: true, userId, isClockedIn, isAdmin });
+          res.json({ success: true, userId, isClockedIn, isAdmin }); // Include isAdmin in the response
         } else {
+          // Passwords do not match, indicating invalid credentials
           res.json({ success: false, message: "Invalid credentials" });
         }
-      } else {
-        res.json({ success: false, message: "Invalid credentials" });
       }
     } catch (error) {
       console.error("Error during login query", error);
