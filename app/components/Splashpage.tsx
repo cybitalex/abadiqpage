@@ -2,6 +2,7 @@
 import Image from "next/image";
 import { useTypewriter, Cursor } from "react-simple-typewriter";
 import { BrowserRouter, Link } from "react-router-dom";
+import { Button, Modal, Form, Alert } from "react-bootstrap";
 import React, { useEffect, useState } from "react";
 import LoginModal from "./employeeLogin";
 const MainPage: React.FC = (): React.ReactElement | null => {
@@ -16,16 +17,18 @@ const MainPage: React.FC = (): React.ReactElement | null => {
   if (typeof document !== "undefined") {
     return (
       <div className="flex flex-col min-h-screen">
-        <button onClick={() => setIsModalOpen(true)}>Login</button>
+        <Button
+          variant="primary"
+          className="ml-auto mr-3 mt-3"
+          onClick={() => setIsModalOpen(true)}
+        >
+          Login
+        </Button>
         <LoginModal show={isModalOpen} onHide={() => setIsModalOpen(false)} />
         <main className="flex min-h-screen flex-col items-center justify-between p-24">
           <div className="z-10 max-w-5xl w-full items-center justify-between font-mono text-sm lg:flex">
             <div className="fixed bottom-0 left-0 flex h-48 w-full items-end justify-center bg-gradient-to-t from-white via-white dark:from-black dark:via-black lg:static lg:h-auto lg:w-auto lg:bg-none">
-              <a
-                // className="pointer-events-none flex place-items-center gap-2 p-8 lg:pointer-events-auto lg:p-0"
-                href="/"
-                rel="noopener noreferrer"
-              >
+              <a href="/" rel="noopener noreferrer">
                 <Image
                   src="/logo-no-background.svg"
                   alt="AbadIQ Logo"
