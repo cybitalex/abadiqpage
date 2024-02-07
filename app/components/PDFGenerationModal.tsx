@@ -17,17 +17,13 @@ const PDFGenerationModal = ({ show, onHide }) => {
   useEffect(() => {
     const fetchUserOptions = async () => {
       try {
-        const response = await fetch("http://localhost:3001/api/admin/users");
+        const response = await fetch(
+          "https://abadiqback.duckdns.org/api/admin/users"
+        );
         if (response.ok) {
-          const data: User[] = await response.json();
-          // Filter out duplicate usernames
-          const uniqueUsernames = Array.from(
-            new Set(data.map((user) => user.username))
-          );
-          // Create user objects with unique usernames
-          const uniqueUsers = uniqueUsernames.map((username) =>
-            data.find((user) => user.username === username)
-          );
+          const data: (User | undefined)[] = await response.json(); // Define the type explicitly as (User | undefined)[]
+          // Filter out undefined elements
+          const uniqueUsers = data.filter((user) => user !== undefined);
           setUserOptions(uniqueUsers);
         } else {
           throw new Error("Failed to fetch user options");
