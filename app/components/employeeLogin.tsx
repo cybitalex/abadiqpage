@@ -29,25 +29,19 @@ const LoginModal = ({ show, onHide }) => {
 
       console.log("Sending login request with username:", credentials.username);
 
-      const response = await axios.post(
-        "https://abadiqback.duckdns.org/login",
-        {
-          username: credentials.username,
-          password: credentials.password,
-        }
-      );
+      const response = await axios.post("http://localhost:3001/login", {
+        username: credentials.username,
+        password: credentials.password,
+      });
 
       if (response.data.success) {
         setIsLoggedIn(true);
         setIsClockedIn(response.data.isClockedIn);
 
         // Send a GET request to the /admin route with the username as a query parameter
-        const adminResponse = await axios.get(
-          "https://abadiqback.duckdns.org/admin",
-          {
-            params: { username: credentials.username },
-          }
-        );
+        const adminResponse = await axios.get("http://localhost:3001/admin", {
+          params: { username: credentials.username },
+        });
         setIsAdmin(adminResponse.data.isAdmin);
 
         console.log("Logged in successfully, user can now clock in or out.");
@@ -56,7 +50,6 @@ const LoginModal = ({ show, onHide }) => {
       }
     } catch (error) {
       console.error("Error during login", error);
-      setLoginError("An error occurred. Please try again later.");
     } finally {
       setLoading(false);
     }
@@ -77,7 +70,7 @@ const LoginModal = ({ show, onHide }) => {
   const handleClockIn = async () => {
     try {
       const clockInResponse = await axios.post(
-        "https://abadiqback.duckdns.org/clock-in",
+        "http://localhost:3001/clock-in",
         {
           username: credentials.username,
         }
@@ -95,7 +88,7 @@ const LoginModal = ({ show, onHide }) => {
   const handleClockOut = async () => {
     try {
       const clockOutResponse = await axios.post(
-        "https://abadiqback.duckdns.org/clock-out",
+        "http://localhost:3001/clock-out",
         {
           username: credentials.username, // sending the logged-in username
         }
