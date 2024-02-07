@@ -5,7 +5,6 @@ import { BrowserRouter, Link } from "react-router-dom";
 import { Button, Modal, Form, Alert } from "react-bootstrap";
 import React, { useEffect, useState } from "react";
 import LoginModal from "./employeeLogin";
-import { Button } from "react-bootstrap";
 const MainPage: React.FC = (): React.ReactElement | null => {
   const [isModalOpen, setIsModalOpen] = useState(false);
 
