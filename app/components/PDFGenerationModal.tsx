@@ -22,7 +22,15 @@ const PDFGenerationModal = ({ show, onHide }) => {
         );
         if (response.ok) {
           const data: User[] = await response.json();
-          setUserOptions(data);
+          // Filter out duplicate usernames
+          const uniqueUsernames = Array.from(
+            new Set(data.map((user) => user.username))
+          );
+          // Create user objects with unique usernames
+          const uniqueUsers = uniqueUsernames.map((username) =>
+            data.find((user) => user.username === username)
+          );
+          setUserOptions(uniqueUsers);
         } else {
           throw new Error("Failed to fetch user options");
         }
