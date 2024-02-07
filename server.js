@@ -332,7 +332,8 @@ nextapp.prepare().then(() => {
       };
 
       const getUsersResult = await req.client.query(getUsersQuery);
-      const users = getUsersResult.rows;
+      const uniqueUsernames = getUsersResult.rows.map((row) => row.username);
+      res.json(uniqueUsernames);
 
       // Convert timestamps to EST
       const usersInEST = users.map((user) => {
