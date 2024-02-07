@@ -325,15 +325,14 @@ nextapp.prepare().then(() => {
       // Fetch the list of users along with their clock-in and clock-out info from your database
       const getUsersQuery = {
         text: `
-          SELECT DISTINCT u.username
+          SELECT u.id, u.username, t.clock_in, t.clock_out
           FROM users u
           LEFT JOIN timesheet t ON u.username = t.username
         `,
       };
 
       const getUsersResult = await req.client.query(getUsersQuery);
-      const uniqueUsernames = getUsersResult.rows.map((row) => row.username);
-      res.json(uniqueUsernames);
+      const users = getUsersResult.rows;
 
       // Convert timestamps to EST
       const usersInEST = users.map((user) => {
