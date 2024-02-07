@@ -1,5 +1,3 @@
-// pages/api/generate-pdf.js
-
 import { NextApiRequest, NextApiResponse } from "next";
 const PDFDocument = require("pdfkit");
 const fs = require("fs");
@@ -77,15 +75,10 @@ export default async function handler(
     const timesheetData = result.rows;
 
     // Calculate total days worked and total hours worked
-    let totalDaysWorked = timesheetData.length;
+    const totalDaysWorked = timesheetData.length;
     let totalHoursWorked = 0;
     timesheetData.forEach((row) => {
-      // Ensure that hours_worked is a number before adding it to totalHoursWorked
-      if (typeof row.hours_worked === "number") {
-        totalHoursWorked += row.hours_worked;
-      } else {
-        console.error(`Invalid hours_worked value found: ${row.hours_worked}`);
-      }
+      totalHoursWorked += row.hours_worked;
     });
 
     // Pipe the PDF to the response
