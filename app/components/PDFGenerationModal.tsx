@@ -3,13 +3,17 @@
 import React, { useState, useEffect } from "react";
 import { Modal, Button, Form } from "react-bootstrap";
 
+interface User {
+  id: number; // Adjust the type based on your actual data
+  username: string;
+}
+
 const PDFGenerationModal = ({ show, onHide }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [userId, setUserId] = useState("");
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
-  const [userOptions, setUserOptions] = useState([]);
-
+  const [userOptions, setUserOptions] = useState<User[]>([]);
   useEffect(() => {
     const fetchUserOptions = async () => {
       try {
@@ -17,7 +21,7 @@ const PDFGenerationModal = ({ show, onHide }) => {
           "https://abadiqback.duckdns.org/api/admin/users"
         );
         if (response.ok) {
-          const data = await response.json();
+          const data: User[] = await response.json();
           setUserOptions(data);
         } else {
           throw new Error("Failed to fetch user options");
