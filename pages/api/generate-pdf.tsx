@@ -126,7 +126,7 @@ export default async function handler(
       doc.text(`Username: ${row.username}`);
       doc.text(`Clock In: ${row.clock_in}`);
       doc.text(`Clock Out: ${row.clock_out}`);
-      doc.text(`Hours Worked: ${row.hours_worked.toFixed(2)} hours`);
+      doc.text(`Hours Worked: ${parseInt(row.hours_worked.toFixed(2))} hours`);
       doc.moveDown();
     });
 

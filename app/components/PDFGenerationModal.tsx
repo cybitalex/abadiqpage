@@ -4,7 +4,7 @@ import React, { useState, useEffect } from "react";
 import { Modal, Button, Form } from "react-bootstrap";
 
 interface User {
-  id: number; // Adjust the type based on your actual data
+  id: number;
   username: string;
 }
 
@@ -14,6 +14,7 @@ const PDFGenerationModal = ({ show, onHide }) => {
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
   const [userOptions, setUserOptions] = useState<User[]>([]);
+
   useEffect(() => {
     const fetchUserOptions = async () => {
       try {
@@ -85,7 +86,8 @@ const PDFGenerationModal = ({ show, onHide }) => {
               <option value="">Select a user</option>
               {userOptions.map((user) => (
                 <option key={user.id} value={user.id}>
-                  {user.username}
+                  {`${user.username} (${user.id})`} // Using a combination of
+                  username and id as the key
                 </option>
               ))}
             </Form.Control>
