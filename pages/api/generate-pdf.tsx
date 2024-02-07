@@ -126,7 +126,9 @@ export default async function handler(
       doc.text(`Username: ${row.username}`);
       doc.text(`Clock In: ${row.clock_in}`);
       doc.text(`Clock Out: ${row.clock_out}`);
-      doc.text(`Hours Worked: ${parseInt(row.hours_worked.toFixed(2))} hours`);
+      const hoursWorkedFormatted =
+        typeof row.hours_worked === "number" ? row.hours_worked.toFixed(2) : "";
+      doc.text(`Hours Worked: ${hoursWorkedFormatted} hours`);
       doc.moveDown();
     });
 
