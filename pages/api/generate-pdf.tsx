@@ -4,7 +4,10 @@ import { NextApiRequest, NextApiResponse } from "next";
 const PDFDocument = require("pdfkit");
 const fs = require("fs");
 const { Client } = require("pg");
-
+function formatDateTime(dateTimeString) {
+  const dateTime = new Date(dateTimeString);
+  return dateTime.toLocaleString(); // Adjust the options as needed
+}
 export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse
@@ -124,8 +127,8 @@ export default async function handler(
     doc.moveDown();
     timesheetData.forEach((row) => {
       doc.text(`Username: ${row.username}`);
-      doc.text(`Clock In: ${row.clock_in}`);
-      doc.text(`Clock Out: ${row.clock_out}`);
+      doc.text(`Clock In: ${formatDateTime(row.clock_in)}`);
+      doc.text(`Clock Out: ${formatDateTime(row.clock_out)}`);
       const hoursWorkedFormatted =
         typeof row.hours_worked === "number" ? row.hours_worked.toFixed(2) : "";
       doc.text(`Hours Worked: ${hoursWorkedFormatted} hours`);
