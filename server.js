@@ -322,17 +322,16 @@ nextapp.prepare().then(() => {
   // Add this route before app.listen() at the end of your code
   app.get("/api/admin/users", async (req, res) => {
     try {
-      // Fetch the list of users along with their clock-in and clock-out info from your database
-      const getUsersQuery = {
-        text: `
-          SELECT u.id, u.username, t.clock_in, t.clock_out
-          FROM users u
-          LEFT JOIN timesheet t ON u.username = t.username
-        `,
-      };
+      const getUsersQuery = `
+      SELECT DISTINCT id, username
+      FROM users
+      ORDER BY username ASC;
+    `;
 
-      const getUsersResult = await req.client.query(getUsersQuery);
-      const users = getUsersResult.rows;
+      const result = await req.client.query(getUsersQuery);
+      const users = result.rows;
+
+      res.json(users);
 
       // Convert timestamps to EST
       const usersInEST = users.map((user) => {
