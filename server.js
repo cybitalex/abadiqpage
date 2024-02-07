@@ -322,14 +322,16 @@ nextapp.prepare().then(() => {
   // Add this route before app.listen() at the end of your code
   app.get("/api/admin/users", async (req, res) => {
     try {
-      const getUsersQuery = `
-        SELECT DISTINCT id, username, clock_in, clock_out
-        FROM users
-        ORDER BY username ASC;
-      `;
+      // Fetch the list of users along with their clock-in and clock-out info from your database
+      const getUsersQuery = {
+        text: `
+          SELECT DISTINCT u.id, u.username
+          FROM users u
+        `,
+      };
 
-      const result = await req.client.query(getUsersQuery);
-      const users = result.rows;
+      const getUsersResult = await req.client.query(getUsersQuery);
+      const users = getUsersResult.rows;
 
       // Convert timestamps to EST
       const usersInEST = users.map((user) => {
@@ -339,12 +341,37 @@ nextapp.prepare().then(() => {
           clock_in: new Date(user.clock_in).toLocaleString("en-US", {
             timeZone: "America/New_York",
           }),
-          clock_out: user.clock_out
-            ? new Date(user.clock_out).toLocaleString("en-US", {
-                timeZone: "America/New_York",
-              })
-            : null,
+          clock_out:
+            user.clock_out === null
+              ? null
+              : new Date(user.clock_out).toLocaleString("en-US", {
+                  timeZone: "America/New_York",
+                }),
         };
+      });
+      app.get("/api/admin/hours-worked", isAdmin, async (req, res) => {
+        try {
+          // SQL query to calculate hours and minutes worked for each row
+          const hoursWorkedQuery = `
+            SELECT
+              id,
+              username,
+              clock_in,
+              clock_out,
+              EXTRACT(EPOCH FROM (clock_out - clock_in)) / 3600.0 AS hours_worked
+            FROM timesheet;
+          `;
+
+          const hoursWorkedResult = await req.client.query(hoursWorkedQuery);
+          const hoursWorkedData = hoursWorkedResult.rows;
+
+          res.json({ success: true, hoursWorkedData });
+        } catch (error) {
+          console.error("Error calculating hours worked", error);
+          res
+            .status(500)
+            .json({ success: false, message: "Internal Server Error" });
+        }
       });
 
       res.json(usersInEST);
