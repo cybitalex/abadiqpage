@@ -4,6 +4,7 @@ const { Client } = require("pg");
 const cors = require("cors");
 const app = express();
 const port = 3001;
+const PDFDocument = require("pdfkit");
 const next = require("next");
 const dev = process.env.NODE_ENV !== "production";
 const nextapp = next({ dev });
@@ -12,7 +13,7 @@ const handle = nextapp.getRequestHandler();
 const path = require("path");
 nextapp.prepare().then(() => {
   app.use(bodyParser.json());
-  app.use(cors());
+  // app.use(cors());
 
   const client = new Client({
     user: "postgres",
@@ -63,11 +64,11 @@ nextapp.prepare().then(() => {
 
   app.post("/login", async (req, res) => {
     const { username, password } = req.body;
+    console.log("Username in login is", username);
     const loginQuery = {
-      text: 'SELECT id, "isAdmin", password FROM users WHERE username = $1',
+      text: 'SELECT "isAdmin", "password" FROM users WHERE username = $1',
       values: [username],
     };
-
     try {
       const loginResult = await req.client.query(loginQuery);
 
@@ -81,6 +82,9 @@ nextapp.prepare().then(() => {
         const passwordMatch = await bcrypt.compare(password, hashedPassword);
 
         if (passwordMatch) {
+          req.username = username;
+
+          // Passwords match, indicating successful login
           const statusQuery = {
             text: "SELECT * FROM timesheet WHERE username = $1 ORDER BY clock_in DESC LIMIT 1",
             values: [username],
@@ -90,12 +94,11 @@ nextapp.prepare().then(() => {
 
           const isClockedIn = lastEntry && !lastEntry.clock_out;
 
-          res.json({ success: true, userId, isClockedIn, isAdmin });
+          res.json({ success: true, userId, isClockedIn, isAdmin }); // Include isAdmin in the response
         } else {
+          // Passwords do not match, indicating invalid credentials
           res.json({ success: false, message: "Invalid credentials" });
         }
-      } else {
-        res.json({ success: false, message: "Invalid credentials" });
       }
     } catch (error) {
       console.error("Error during login query", error);
@@ -106,56 +109,118 @@ nextapp.prepare().then(() => {
   });
 
   // Middleware to check if the user is an admin
-  function isAdmin(req, res, next) {
-    const { username } = req.body;
+  // function isAdmin(req, res, next) {
+  //   const { username } = req.query;
+  //   console.log("Username in isAdmin function is", username);
+  //   const isAdminQuery = {
+  //     text: "SELECT 'isAdmin' FROM users WHERE username = $1",
+  //     values: [username],
+  //   };
 
-    // Check if the user with the given username is an admin
-    const isAdminQuery = {
-      text: "SELECT isAdmin FROM users WHERE username = $1",
-      values: [username],
-    };
+  //   req.client.query(isAdminQuery, (err, result) => {
+  //     if (err) {
+  //       console.error("Error checking admin status", err);
+  //       return res
+  //         .status(500)
+  //         .json({ success: false, message: "Internal Server Error" });
+  //     } else {
+  //       const isAdmin = result.rows[0]?.isadmin || false;
 
-    req.client.query(isAdminQuery, (err, result) => {
-      if (err) {
-        console.error("Error checking admin status", err);
-        res
-          .status(500)
-          .json({ success: false, message: "Internal Server Error" });
-      } else {
-        const isAdmin = result.rows[0]?.isadmin || false;
+  //       if (isAdmin) {
+  //         return next();
+  //       } else {
+  //         return res
+  //           .status(403)
+  //           .json({ success: false, message: "Unauthorized" });
+  //       }
+  //     }
+  //   });
+  // }
 
-        if (isAdmin) {
-          // User is an admin, proceed to the admin portal
-          next();
-        } else {
-          // User is not an admin, return an unauthorized response
-          res.status(403).json({ success: false, message: "Unauthorized" });
-        }
-      }
-    });
-  }
+  // // Admin route to fetch admin data
+  // app.get("/admin", isAdmin, async (req, res) => {
+  //   const { username } = req.query;
 
-  // Admin route to fetch admin data
-  app.get("/admin", isAdmin, async (req, res) => {
-    const { username } = req.body;
+  //   // Fetch admin data as needed
+  //   // Modify the SQL query to fetch relevant information from the timesheet table
 
-    // Fetch admin data as needed
-    // Modify the SQL query to fetch relevant information from the timesheet table
+  //   const adminDataQuery = {
+  //     text: "SELECT * FROM timesheet", // Modify this query as needed
+  //   };
 
-    const adminDataQuery = {
-      text: "SELECT * FROM timesheet", // Modify this query as needed
-    };
+  //   try {
+  //     const adminDataResult = await req.client.query(adminDataQuery);
+  //     const adminData = adminDataResult.rows;
 
+  //     res.json({ success: true, isAdmin: true, adminData });
+  //   } catch (error) {
+  //     console.error("Error during admin data query", error);
+  //     res
+  //       .status(500)
+  //       .json({ success: false, message: "Internal Server Error" });
+  //   }
+  // });
+  app.get("/generate-pdf", async (req, res) => {
     try {
-      const adminDataResult = await req.client.query(adminDataQuery);
-      const adminData = adminDataResult.rows;
+      // Get username and date range from query parameters
+      const { username, startDate, endDate } = req.query;
 
-      res.json({ success: true, isAdmin: true, adminData });
+      // Validate the parameters (you can add more validation logic as needed)
+      if (!username || !startDate || !endDate) {
+        return res.status(400).json({ error: "Invalid parameters" });
+      }
+
+      // Parse the date strings into JavaScript Date objects
+      const parsedStartDate = new Date(startDate);
+      const parsedEndDate = new Date(endDate);
+
+      // Add your database query here to fetch the user's clock-in and clock-out records
+      // within the specified date range and calculate the total hours worked.
+      // You may need to adjust the SQL query accordingly.
+
+      // Example SQL query (you need to modify this query based on your database schema):
+      const query = {
+        text: `
+          SELECT
+            SUM(EXTRACT(EPOCH FROM (clock_out - clock_in)) / 3600.0) AS total_hours_worked
+          FROM timesheet
+          WHERE username = $1
+            AND clock_in >= $2
+            AND clock_out <= $3
+        `,
+        values: [username, parsedStartDate, parsedEndDate],
+      };
+
+      const result = await req.client.query(query);
+      const totalHoursWorked = result.rows[0].total_hours_worked;
+
+      const doc = new PDFDocument();
+
+      const filename = "user_hours_summary.pdf";
+
+      res.setHeader("Content-Type", "application/pdf");
+      res.setHeader(
+        "Content-Disposition",
+        `attachment; filename="${filename}"`
+      );
+
+      // Create a writable stream to pipe the PDF content to the response
+      doc.pipe(res);
+
+      // Add content to the PDF document, including the total hours worked
+      doc.fontSize(16).text("User Hours Summary", { align: "center" });
+      doc
+        .fontSize(12)
+        .text(`Total Hours Worked: ${totalHoursWorked.toFixed(2)} hours`);
+
+      // Finalize the PDF document
+      doc.end();
+
+      // Log the PDF generation
+      console.log(`Generated PDF: ${filename}`);
     } catch (error) {
-      console.error("Error during admin data query", error);
-      res
-        .status(500)
-        .json({ success: false, message: "Internal Server Error" });
+      console.error("Error generating PDF", error);
+      res.status(500).send("Internal Server Error");
     }
   });
 

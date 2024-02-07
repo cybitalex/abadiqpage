@@ -21,7 +21,7 @@
     "next-env.d.ts",
     "**/*.ts",
     "**/*.tsx"
-, "hosting/pages/About.tsx", "hosting/pages/Coding.tsx", "pages/RCM.tsx"  ],
+, "hosting/pages/About.tsx", "hosting/pages/Coding.tsx", "pages/RCM.tsx", "../pages/generatepdf.tsx"  ],
   "exclude": [
     "node_modules"
   ]
