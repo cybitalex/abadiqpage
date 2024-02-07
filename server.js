@@ -35,7 +35,11 @@ nextapp.prepare().then(() => {
     clock_out TIMESTAMP
   );
 `;
-  const allowedOrigins = ["http://abadiq.com", "https://abadiq.com"];
+  const allowedOrigins = [
+    "http://abadiq.com",
+    "https://abadiq.com",
+    "http://localhost:3000",
+  ];
 
   app.use(
     cors({
