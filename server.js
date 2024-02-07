@@ -17,7 +17,7 @@ nextapp.prepare().then(() => {
 
   const client = new Client({
     user: "postgres",
-    host: "abadiqback.duckdns.org",
+    host: "localhost",
     database: "clockingsystem",
     password: "tar6*down",
     port: 5432,

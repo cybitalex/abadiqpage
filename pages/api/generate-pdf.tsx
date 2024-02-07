@@ -1,3 +1,5 @@
+// pages/api/generate-pdf.js
+
 import { NextApiRequest, NextApiResponse } from "next";
 const PDFDocument = require("pdfkit");
 const fs = require("fs");
@@ -31,7 +33,7 @@ export default async function handler(
   // Initialize a connection to your PostgreSQL database
   const client = new Client({
     user: "postgres",
-    host: "abadiqback.duckdns.org",
+    host: "localhost",
     database: "clockingsystem",
     password: "tar6*down",
     port: 5432,

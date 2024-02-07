@@ -17,9 +17,7 @@ const PDFGenerationModal = ({ show, onHide }) => {
   useEffect(() => {
     const fetchUserOptions = async () => {
       try {
-        const response = await fetch(
-          "https://abadiqback.duckdns.org/api/admin/users"
-        );
+        const response = await fetch("http://localhost:3001/api/admin/users");
         if (response.ok) {
           const data: User[] = await response.json();
           setUserOptions(data);
@@ -44,7 +42,7 @@ const PDFGenerationModal = ({ show, onHide }) => {
       }
 
       const response = await fetch(
-        `https://abadiqback.duckdns.org/api/generate-pdf?userId=${userId}&startDate=${startDate}&endDate=${endDate}`,
+        `http://localhost:3001/api/generate-pdf?userId=${userId}&startDate=${startDate}&endDate=${endDate}`,
         { method: "GET" }
       );
 
