@@ -12,26 +12,20 @@ const LoginModal = ({ show, onHide }) => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [isClockedIn, setIsClockedIn] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
-  const handleAdminButtonClick = () => {
-    // Add logic to handle the admin button click here
-    // For example, you can navigate to the admin portal page
-    // or perform any other actions specific to admin users.
-  };
+  const handleAdminButtonClick = () => {};
   const handleLogin = async () => {
     try {
       setLoading(true);
       setError("");
 
-      // Simple client-side validation
       if (!credentials.username || !credentials.password) {
         setError("Please enter both username and password.");
-        setLoading(false); // Ensure to stop loading if validation fails
+        setLoading(false);
         return;
       }
 
       console.log("Sending login request with username:", credentials.username);
 
-      // Make sure to send data in the correct JSON format
       const response = await axios.post(
         "https://abadiqback.duckdns.org/login",
         {
@@ -41,12 +35,15 @@ const LoginModal = ({ show, onHide }) => {
       );
 
       if (response.data.success) {
-        setIsLoggedIn(true); // Set isLoggedIn to true upon successful login
+        setIsLoggedIn(true);
         setIsClockedIn(response.data.isClockedIn);
 
-        // Fetch the admin status after successful login
+        // Send a GET request to the /admin route with the username as a query parameter
         const adminResponse = await axios.get(
-          "https://abadiqback.duckdns.org/admin"
+          "https://abadiqback.duckdns.org/admin",
+          {
+            params: { username: credentials.username },
+          }
         );
         setIsAdmin(adminResponse.data.isAdmin);
 
@@ -79,17 +76,15 @@ const LoginModal = ({ show, onHide }) => {
       console.log("Clocked In Successfully:", clockInResponse.data);
       setIsClockedIn(true); // Set the user as clocked in
       alert("Clocked In Successfully"); // Show success notification
-      onHide(); // Close the modal
+      onHide();
       window.location.reload();
     } catch (error) {
       console.error("Error clocking in:", error);
-      // Handle errors - show user a message or log
     }
   };
 
   const handleClockOut = async () => {
     try {
-      // Make a POST request to clock-out the user
       const clockOutResponse = await axios.post(
         "https://abadiqback.duckdns.org/clock-out",
         {
@@ -103,7 +98,6 @@ const LoginModal = ({ show, onHide }) => {
       window.location.reload();
     } catch (error) {
       console.error("Error clocking out:", error);
-      // Handle errors - show user a message or log
     }
   };
 
@@ -160,12 +154,12 @@ const LoginModal = ({ show, onHide }) => {
               >
                 Clock Out
               </Button>
+              {isAdmin && (
+                <Button variant="info" onClick={handleAdminButtonClick}>
+                  Admin Button
+                </Button>
+              )}
             </>
-          )}
-          {isAdmin && (
-            <Button variant="info" onClick={handleAdminButtonClick}>
-              Admin Button
-            </Button>
           )}
         </Form>
       </Modal.Body>

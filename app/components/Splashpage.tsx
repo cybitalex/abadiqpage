@@ -4,6 +4,7 @@ import { useTypewriter, Cursor } from "react-simple-typewriter";
 import { BrowserRouter, Link } from "react-router-dom";
 import React, { useEffect, useState } from "react";
 import LoginModal from "./employeeLogin";
+import { Button } from "react-bootstrap";
 const MainPage: React.FC = (): React.ReactElement | null => {
   const [isModalOpen, setIsModalOpen] = useState(false);
 
@@ -16,7 +17,13 @@ const MainPage: React.FC = (): React.ReactElement | null => {
   if (typeof document !== "undefined") {
     return (
       <div className="flex flex-col min-h-screen">
-        <button onClick={() => setIsModalOpen(true)}>Login</button>
+        <Button
+          variant="primary"
+          className="ml-auto mr-3 mt-3"
+          onClick={() => setIsModalOpen(true)}
+        >
+          Login
+        </Button>
         <LoginModal show={isModalOpen} onHide={() => setIsModalOpen(false)} />
         <main className="flex min-h-screen flex-col items-center justify-between p-24">
           <div className="z-10 max-w-5xl w-full items-center justify-between font-mono text-sm lg:flex">
@@ -39,7 +46,7 @@ const MainPage: React.FC = (): React.ReactElement | null => {
           <div className="relative flex place-items-center before:absolute before:h-[300px] before:w-[480px] before:-translate-x-1/2 before:rounded-full before:bg-gradient-radial before:from-white before:to-transparent before:blur-2xl before:content-[''] after:absolute after:-z-20 after:h-[180px] after:w-[240px] after:translate-x-1/3 after:bg-gradient-conic after:from-sky-200 after:via-blue-200 after:blur-2xl after:content-[''] before:dark:bg-gradient-to-br before:dark:from-transparent before:dark:to-blue-700 before:dark:opacity-10 after:dark:from-sky-900 after:dark:via-[#7801ff] after:dark:opacity-30 before:lg:h-[360px] z-[-1]">
             <Image
               className="relative dark:drop-shadow-[0_0_0.3rem_#ffffff70]"
-              src="/logo-no-background.svg"
+              src="/logo-frontpage.png"
               alt="AbadIQ Logo"
               width={180}
               height={37}
