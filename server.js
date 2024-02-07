@@ -182,7 +182,7 @@ nextapp.prepare().then(() => {
         .json({ success: false, message: "Internal Server Error" });
     }
   });
-  app.get("/api/generate-pdf", async (req, res) => {
+  app.get("/generate-pdf", async (req, res) => {
     try {
       // Get username and date range from query parameters
       const { username, startDate, endDate } = req.query;
