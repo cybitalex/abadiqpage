@@ -66,7 +66,7 @@ nextapp.prepare().then(() => {
     const { username, password } = req.body;
     console.log("Username in login is", username);
     const loginQuery = {
-      text: 'SELECT "isAdmin", "password" FROM users WHERE username = $1',
+      text: "SELECT isadmin, password FROM users WHERE username = $1",
       values: [username],
     };
     try {
@@ -109,58 +109,76 @@ nextapp.prepare().then(() => {
   });
 
   // Middleware to check if the user is an admin
-  // function isAdmin(req, res, next) {
-  //   const { username } = req.query;
-  //   console.log("Username in isAdmin function is", username);
-  //   const isAdminQuery = {
-  //     text: "SELECT 'isAdmin' FROM users WHERE username = $1",
-  //     values: [username],
-  //   };
+  function isAdmin(req, res, next) {
+    const { username } = req.query;
+    console.log("Username in isAdmin function is", username);
+    const isAdminQuery = {
+      text: "SELECT isadmin FROM users WHERE username = $1",
+      values: [username],
+    };
 
-  //   req.client.query(isAdminQuery, (err, result) => {
-  //     if (err) {
-  //       console.error("Error checking admin status", err);
-  //       return res
-  //         .status(500)
-  //         .json({ success: false, message: "Internal Server Error" });
-  //     } else {
-  //       const isAdmin = result.rows[0]?.isadmin || false;
+    req.client.query(isAdminQuery, (err, result) => {
+      if (err) {
+        console.error("Error checking admin status", err);
+        return res
+          .status(500)
+          .json({ success: false, message: "Internal Server Error" });
+      } else {
+        const isAdmin = result.rows[0]?.isadmin || false;
 
-  //       if (isAdmin) {
-  //         return next();
-  //       } else {
-  //         return res
-  //           .status(403)
-  //           .json({ success: false, message: "Unauthorized" });
-  //       }
-  //     }
-  //   });
-  // }
+        if (isAdmin) {
+          return next();
+        } else {
+          return res
+            .status(403)
+            .json({ success: false, message: "Unauthorized" });
+        }
+      }
+    });
+  }
 
-  // // Admin route to fetch admin data
-  // app.get("/admin", isAdmin, async (req, res) => {
-  //   const { username } = req.query;
+  // Admin route to fetch admin data
+  app.get("/admin", async (req, res) => {
+    const { username } = req.query;
 
-  //   // Fetch admin data as needed
-  //   // Modify the SQL query to fetch relevant information from the timesheet table
+    // Query the database to get the user's ID based on the username
+    const userIdQuery = {
+      text: "SELECT id FROM users WHERE username = $1",
+      values: [username],
+    };
 
-  //   const adminDataQuery = {
-  //     text: "SELECT * FROM timesheet", // Modify this query as needed
-  //   };
+    try {
+      const userIdResult = await req.client.query(userIdQuery);
+      const userId = userIdResult.rows[0]?.id;
+      console.log(userId);
+      if (!userId) {
+        return res
+          .status(404)
+          .json({ success: false, message: "User not found" });
+      }
 
-  //   try {
-  //     const adminDataResult = await req.client.query(adminDataQuery);
-  //     const adminData = adminDataResult.rows;
+      // Now that you have the user's ID, query the database to check if the user is an admin
+      const isAdminQuery = {
+        text: "SELECT isadmin FROM users WHERE id = $1",
+        values: [userId],
+      };
 
-  //     res.json({ success: true, isAdmin: true, adminData });
-  //   } catch (error) {
-  //     console.error("Error during admin data query", error);
-  //     res
-  //       .status(500)
-  //       .json({ success: false, message: "Internal Server Error" });
-  //   }
-  // });
-  app.get("/generate-pdf", async (req, res) => {
+      const isAdminResult = await req.client.query(isAdminQuery);
+      const isAdmin = isAdminResult.rows[0]?.isadmin || false;
+
+      if (isAdmin) {
+        res.json({ success: true, isAdmin });
+      } else {
+        res.status(403).json({ success: false, message: "Unauthorized" });
+      }
+    } catch (error) {
+      console.error("Error during admin data query", error);
+      res
+        .status(500)
+        .json({ success: false, message: "Internal Server Error" });
+    }
+  });
+  app.get("/api/generate-pdf", async (req, res) => {
     try {
       // Get username and date range from query parameters
       const { username, startDate, endDate } = req.query;
@@ -303,9 +321,9 @@ nextapp.prepare().then(() => {
       // Fetch the list of users along with their clock-in and clock-out info from your database
       const getUsersQuery = {
         text: `
-          SELECT u.id, u.username, t.clock_in, t.clock_out
+          SELECT DISTINCT u.id, u.username
           FROM users u
-          LEFT JOIN timesheet t ON u.username = t.username
+          ORDER BY u.username;
         `,
       };
 

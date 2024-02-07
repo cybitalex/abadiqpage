@@ -39,3 +39,12 @@ body {
 .custom-modal .modal-backdrop {
   background-color: rgba(0, 0, 0, 0.5); /* Adjust the alpha channel as needed */
 }
+
+.custom-pdf-modal .modal-content {
+  background-color: #333; /* Dark color for the modal background */
+  color: #fff; /* Text color */
+}
+
+.custom-pdf-modal .modal-backdrop {
+  background-color: rgba(0, 0, 0, 0.5); /* Adjust the alpha channel as needed */
+}

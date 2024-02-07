@@ -1,13 +1,16 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Modal, Button, Form, Alert } from "react-bootstrap";
 import axios from "axios";
+import PDFGenerationModal from "./PDFGenerationModal";
 
 const LoginModal = ({ show, onHide }) => {
   const [credentials, setCredentials] = useState({
     username: "",
     password: "",
   });
-  const [error, setError] = useState("");
+  const [showPDFModal, setShowPDFModal] = useState(false);
+  const [showGeneratePDFButton, setShowGeneratePDFButton] = useState(false);
+  const [loginError, setLoginError] = useState("");
   const [loading, setLoading] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [isClockedIn, setIsClockedIn] = useState(false);
@@ -16,10 +19,10 @@ const LoginModal = ({ show, onHide }) => {
   const handleLogin = async () => {
     try {
       setLoading(true);
-      setError("");
+      setLoginError(""); // Clear previous login error
 
       if (!credentials.username || !credentials.password) {
-        setError("Please enter both username and password.");
+        setLoginError("Please enter both username and password.");
         setLoading(false);
         return;
       }
@@ -49,14 +52,20 @@ const LoginModal = ({ show, onHide }) => {
 
         console.log("Logged in successfully, user can now clock in or out.");
       } else {
-        setError("Invalid credentials. Please try again.");
+        setLoginError("Invalid credentials. Please try again.");
       }
     } catch (error) {
       console.error("Error during login", error);
-      setError("An error occurred. Please try again later.");
+      setLoginError("An error occurred. Please try again later.");
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleLogout = () => {
+    setIsLoggedIn(false);
+    alert("Logged out successfully");
+    window.location.reload(); // Refresh the page after logout
   };
 
   const handleChange = (field, value) => {
@@ -93,7 +102,7 @@ const LoginModal = ({ show, onHide }) => {
       );
       console.log("Clocked Out Successfully:", clockOutResponse.data);
       setIsClockedIn(false);
-      alert("Clocked Out Successfully");
+
       onHide();
       window.location.reload();
     } catch (error) {
@@ -101,43 +110,67 @@ const LoginModal = ({ show, onHide }) => {
     }
   };
 
+  const handlePDFButtonClick = () => {
+    setShowPDFModal(true);
+  };
+  useEffect(() => {
+    // Check if the logged-in user is 'abby' to show the Generate PDF button
+    if (isLoggedIn && credentials.username === "abby") {
+      setShowGeneratePDFButton(true);
+    } else {
+      setShowGeneratePDFButton(false);
+    }
+  }, [isLoggedIn, credentials.username]);
   return (
-    <Modal show={show} onHide={onHide} className="custom-modal">
-      <Modal.Header closeButton>
-        <Modal.Title>Login</Modal.Title>
-      </Modal.Header>
-      <Modal.Body>
-        {error && <Alert variant="danger">{error}</Alert>}
-        <Form>
-          <Form.Group controlId="formBasicUsername">
-            <Form.Label>Username</Form.Label>
-            <Form.Control
-              type="text"
-              placeholder="Enter your username"
-              value={credentials.username}
-              onChange={(e) => handleChange("username", e.target.value)}
-            />
-          </Form.Group>
+    <>
+      <Modal show={show} onHide={onHide} className="custom-modal">
+        <Modal.Header closeButton>
+          <Modal.Title>
+            {isLoggedIn ? `Logged in as ${credentials.username}` : "Login"}
+          </Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          {loginError && <Alert variant="danger">{loginError}</Alert>}
+          {isLoggedIn ? (
+            <>
+              <p>Logged in as {credentials.username}</p>
+              <Button variant="primary" onClick={handleLogout}>
+                Logout
+              </Button>
+            </>
+          ) : (
+            <Form>
+              <Form.Group controlId="formBasicUsername">
+                <Form.Label>Username</Form.Label>
+                <Form.Control
+                  type="text"
+                  placeholder="Enter your username"
+                  value={credentials.username}
+                  onChange={(e) => handleChange("username", e.target.value)}
+                />
+              </Form.Group>
 
-          <Form.Group controlId="formBasicPassword">
-            <Form.Label>Password</Form.Label>
-            <Form.Control
-              type="password"
-              placeholder="Enter your password"
-              value={credentials.password}
-              onChange={(e) => handleChange("password", e.target.value)}
-            />
-          </Form.Group>
+              <Form.Group controlId="formBasicPassword">
+                <Form.Label>Password</Form.Label>
+                <Form.Control
+                  type="password"
+                  placeholder="Enter your password"
+                  value={credentials.password}
+                  onChange={(e) => handleChange("password", e.target.value)}
+                />
+              </Form.Group>
 
-          <Button
-            variant="primary"
-            type="button"
-            className="btn-light-purple"
-            onClick={handleLogin}
-            disabled={loading}
-          >
-            {loading ? "Logging in..." : "Login"}
-          </Button>
+              <Button
+                variant="primary"
+                type="button"
+                className="btn-light-purple"
+                onClick={handleLogin}
+                disabled={loading}
+              >
+                {loading ? "Logging in..." : "Login"}
+              </Button>
+            </Form>
+          )}
           {isLoggedIn && (
             <>
               <Button
@@ -159,11 +192,20 @@ const LoginModal = ({ show, onHide }) => {
                   Admin Button
                 </Button>
               )}
+              {showGeneratePDFButton && (
+                <Button variant="primary" onClick={handlePDFButtonClick}>
+                  Generate PDF
+                </Button>
+              )}
             </>
           )}
-        </Form>
-      </Modal.Body>
-    </Modal>
+        </Modal.Body>
+      </Modal>
+      <PDFGenerationModal
+        show={showPDFModal}
+        onHide={() => setShowPDFModal(false)}
+      />
+    </>
   );
 };
 
