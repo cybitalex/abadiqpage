@@ -36,7 +36,7 @@ export default async function handler(
   // Initialize a connection to your PostgreSQL database
   const client = new Client({
     user: "postgres",
-    host: "localhost",
+    host: "abadiqback.duckdns.org",
     database: "clockingsystem",
     password: "tar6*down",
     port: 5432,

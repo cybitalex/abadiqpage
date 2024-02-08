@@ -17,17 +17,19 @@ const PDFGenerationModal = ({ show, onHide }) => {
   useEffect(() => {
     const fetchUserOptions = async () => {
       try {
-        const response = await fetch("http://localhost:3001/api/admin/users");
+        const response = await fetch(
+          "https://abadiqback.duckdns.org/api/admin/users"
+        );
         if (response.ok) {
           const data: User[] = await response.json();
           // Filter out duplicate usernames
           const uniqueUsernames = Array.from(
             new Set(data.map((user) => user.username))
           );
-          // Create user objects with unique usernames
-          const uniqueUsers = uniqueUsernames.map((username) =>
-            data.find((user) => user.username === username)
-          );
+          const uniqueUsers = uniqueUsernames
+            .map((username) => data.find((user) => user.username === username))
+            .filter((user) => user !== undefined) as User[];
+
           setUserOptions(uniqueUsers);
         } else {
           throw new Error("Failed to fetch user options");
@@ -50,7 +52,7 @@ const PDFGenerationModal = ({ show, onHide }) => {
       }
 
       const response = await fetch(
-        `http://localhost:3001/api/generate-pdf?userId=${userId}&startDate=${startDate}&endDate=${endDate}`,
+        `https://abadiqback.duckdns.org/api/generate-pdf?userId=${userId}&startDate=${startDate}&endDate=${endDate}`,
         { method: "GET" }
       );
 
