@@ -138,7 +138,14 @@ export default async function handler(
     // Add total days worked and total hours worked
     doc.moveDown();
     doc.text(`Total Days Worked: ${totalDaysWorked}`);
-    doc.text(`Total Hours Worked: ${totalHoursWorked.toFixed(2)} hours`);
+    const totalHoursWorkedNumber = parseFloat(totalHoursWorked.toString());
+    if (!isNaN(totalHoursWorkedNumber)) {
+      doc.text(
+        `Total Hours Worked: ${totalHoursWorkedNumber.toFixed(2)} hours`
+      );
+    } else {
+      doc.text("Total Hours Worked: N/A");
+    }
 
     // End the PDF document
     doc.end();
