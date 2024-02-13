@@ -93,6 +93,7 @@ export default async function handler(
       "attachment; filename=user_hours_summary.pdf"
     );
     doc.pipe(res);
+    console.log("Total hours worked before formatting:", totalHoursWorked);
 
     // Add content to the PDF
     const logoPath = "pages/api/logo.png"; // Replace with the path to your logo
