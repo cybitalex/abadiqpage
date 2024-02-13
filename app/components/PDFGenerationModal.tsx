@@ -52,7 +52,7 @@ const PDFGenerationModal = ({ show, onHide }) => {
       }
 
       const response = await fetch(
-        `http://localhost:3001/api/generate-pdf?userId=${userId}&startDate=${startDate}&endDate=${endDate}`,
+        `https://abadiqback.duckdns.org/api/generate-pdf?userId=${userId}&startDate=${startDate}&endDate=${endDate}`,
         { method: "GET" }
       );
 
