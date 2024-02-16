@@ -14,7 +14,7 @@ const GeneratePDFButton: React.FC = () => {
     // Fetch user options from your API or database and populate the dropdown
     const fetchUserOptions = async () => {
       try {
-        const response = await fetch("http://localhost:3001/api/admin/users");
+        const response = await fetch("https://abadiqback.duckdns.org/api/admin/users");
         // Replace with your API endpoint
         if (response.ok) {
           const data = await response.json();

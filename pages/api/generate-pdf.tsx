@@ -80,11 +80,15 @@ export default async function handler(
     const timesheetData = result.rows;
 
     // Calculate total days worked and total hours worked
-    const totalDaysWorked = timesheetData.length;
+    let totalDaysWorked = 0;
     let totalHoursWorked = 0;
     timesheetData.forEach((row) => {
-      totalHoursWorked += row.hours_worked;
+      totalDaysWorked++;
+      totalHoursWorked += parseFloat(row.hours_worked);
     });
+
+    // Format total hours worked with 2 decimal places
+    const formattedTotalHoursWorked = totalHoursWorked.toFixed(2);
 
     // Pipe the PDF to the response
     res.setHeader("Content-Type", "application/pdf");
@@ -93,7 +97,6 @@ export default async function handler(
       "attachment; filename=user_hours_summary.pdf"
     );
     doc.pipe(res);
-    console.log("Total hours worked before formatting:", totalHoursWorked);
 
     // Add content to the PDF
     const logoPath = "pages/api/logo.png"; // Replace with the path to your logo
@@ -130,23 +133,15 @@ export default async function handler(
       doc.text(`Username: ${row.username}`);
       doc.text(`Clock In: ${formatDateTime(row.clock_in)}`);
       doc.text(`Clock Out: ${formatDateTime(row.clock_out)}`);
-      const hoursWorkedFormatted =
-        typeof row.hours_worked === "number" ? row.hours_worked.toFixed(2) : "";
-      doc.text(`Hours Worked: ${hoursWorkedFormatted} hours`);
+	console.log(row.hours_worked.toFixed(2))
+      doc.text(`Hours Worked: ${row.hours_worked.toFixed(2)} hours`);
       doc.moveDown();
     });
 
-    // Add total days worked and total hours worked
+    // Add total days worked and total hours worked to the PDF document
     doc.moveDown();
     doc.text(`Total Days Worked: ${totalDaysWorked}`);
-    const totalHoursWorkedNumber = parseFloat(totalHoursWorked.toString());
-    if (!isNaN(totalHoursWorkedNumber)) {
-      doc.text(
-        `Total Hours Worked: ${totalHoursWorkedNumber.toFixed(2)} hours`
-      );
-    } else {
-      doc.text("Total Hours Worked: N/A");
-    }
+    doc.text(`Total Hours Worked: ${formattedTotalHoursWorked} hours`);
 
     // End the PDF document
     doc.end();
