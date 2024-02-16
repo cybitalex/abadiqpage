@@ -13,7 +13,7 @@ const handle = nextapp.getRequestHandler();
 const path = require("path");
 nextapp.prepare().then(() => {
   app.use(bodyParser.json());
-  // app.use(cors());
+  app.use(cors());
 
   const client = new Client({
     user: "postgres",
@@ -41,17 +41,6 @@ nextapp.prepare().then(() => {
     "http://localhost:3000",
   ];
 
-  app.use(
-    cors({
-      origin: function (origin, callback) {
-        if (!origin || allowedOrigins.includes(origin)) {
-          callback(null, true);
-        } else {
-          callback(new Error("Not allowed by CORS"));
-        }
-      },
-    })
-  );
   // Middleware to make the 'client' variable accessible globally
   app.use((req, res, next) => {
     req.client = client;

@@ -1,13 +1,17 @@
-// pages/api/generate-pdf.js
-
 import { NextApiRequest, NextApiResponse } from "next";
 const PDFDocument = require("pdfkit");
 const fs = require("fs");
 const { Client } = require("pg");
+
 function formatDateTime(dateTimeString) {
+  const options = {
+    timeZone: "America/New_York", // Set the time zone to Eastern Standard Time
+    hour12: false, // Use 24-hour clock format
+  };
   const dateTime = new Date(dateTimeString);
-  return dateTime.toLocaleString(); // Adjust the options as needed
+  return dateTime.toLocaleString("en-US", options);
 }
+
 export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse
@@ -82,9 +86,13 @@ export default async function handler(
     // Calculate total days worked and total hours worked
     let totalDaysWorked = 0;
     let totalHoursWorked = 0;
+    console.log("Timesheet Data:", timesheetData);
+
     timesheetData.forEach((row) => {
       totalDaysWorked++;
-      totalHoursWorked += parseFloat(row.hours_worked);
+      const hoursWorked = parseFloat(row.hours_worked);
+      console.log("Hours Worked:", hoursWorked); // Log the hours worked
+      totalHoursWorked += hoursWorked;
     });
 
     // Format total hours worked with 2 decimal places
@@ -125,7 +133,7 @@ export default async function handler(
     doc.text(`${username}`, {
       align: "center",
     });
-
+    console.log(query.text, query.values);
     doc.moveDown();
     doc.text("Timesheet Data:");
     doc.moveDown();
@@ -133,7 +141,8 @@ export default async function handler(
       doc.text(`Username: ${row.username}`);
       doc.text(`Clock In: ${formatDateTime(row.clock_in)}`);
       doc.text(`Clock Out: ${formatDateTime(row.clock_out)}`);
-	console.log(row.hours_worked.toFixed(2))
+      console.log(row.hours_worked);
+      console.log(row.hours_worked.toFixed(2));
       doc.text(`Hours Worked: ${row.hours_worked.toFixed(2)} hours`);
       doc.moveDown();
     });
