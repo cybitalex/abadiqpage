@@ -5,7 +5,7 @@ const { Client } = require("pg");
 
 function formatDateTime(dateTimeString) {
   const options = {
-    timeZone: "America/New_York", // Set the time zone to Eastern Standard Time
+    timeZone: "UTC",
     hour12: false, // Use 24-hour clock format
   };
   const dateTime = new Date(dateTimeString);
@@ -90,13 +90,14 @@ export default async function handler(
 
     timesheetData.forEach((row) => {
       totalDaysWorked++;
-      const hoursWorked = parseFloat(row.hours_worked);
+      const hoursWorked = Number(row.hours_worked);
       console.log("Hours Worked:", hoursWorked); // Log the hours worked
+      if (!isNaN(hoursWorked)) {
       totalHoursWorked += hoursWorked;
+}
     });
 
     // Format total hours worked with 2 decimal places
-    const formattedTotalHoursWorked = totalHoursWorked.toFixed(2);
 
     // Pipe the PDF to the response
     res.setHeader("Content-Type", "application/pdf");
@@ -133,7 +134,6 @@ export default async function handler(
     doc.text(`${username}`, {
       align: "center",
     });
-    console.log(query.text, query.values);
     doc.moveDown();
     doc.text("Timesheet Data:");
     doc.moveDown();
@@ -141,16 +141,14 @@ export default async function handler(
       doc.text(`Username: ${row.username}`);
       doc.text(`Clock In: ${formatDateTime(row.clock_in)}`);
       doc.text(`Clock Out: ${formatDateTime(row.clock_out)}`);
-      console.log(row.hours_worked);
-      console.log(row.hours_worked.toFixed(2));
-      doc.text(`Hours Worked: ${row.hours_worked.toFixed(2)} hours`);
+      doc.text(`Hours Worked: ${parseFloat(row.hours_worked).toFixed(2)} hours`);
       doc.moveDown();
     });
 
     // Add total days worked and total hours worked to the PDF document
     doc.moveDown();
     doc.text(`Total Days Worked: ${totalDaysWorked}`);
-    doc.text(`Total Hours Worked: ${formattedTotalHoursWorked} hours`);
+    doc.text(`Total Hours Worked: ${totalHoursWorked.toFixed(2)} hours`);
 
     // End the PDF document
     doc.end();
